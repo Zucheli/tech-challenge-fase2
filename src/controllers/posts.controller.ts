@@ -1,12 +1,21 @@
 import { Request, Response, NextFunction } from "express";
 import * as service from "../services/posts.service";
 
-export const listPosts = async (_req: Request, res: Response, next: NextFunction) => {
+export const listPublicPosts = async (req: Request, res: Response) => {
     try {
-        const posts = await service.listPosts();
+        const posts = await service.listPublicPosts();
         res.json(posts);
-    } catch (err) {
-        next(err);
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao listar posts públicos" });
+    }
+};
+
+export const listAllPosts = async (req: Request, res: Response) => {
+    try {
+        const posts = await service.listAllPosts();
+        res.json(posts);
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao listar todos os posts" });
     }
 };
 

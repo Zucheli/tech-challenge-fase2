@@ -17,7 +17,7 @@ const options = {
             },
         ],
     },
-    apis: ["./src/routes/*.ts"], // arquivos com anotações Swagger
+    apis: ["./src/routes/*.ts"],
     components: {
         securitySchemes: {
             bearerAuth: {

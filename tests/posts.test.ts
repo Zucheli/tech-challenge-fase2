@@ -28,6 +28,20 @@ describe("POSTS API", () => {
         expect(Array.isArray(res.body)).toBe(true);
     });
 
+    it("deve listar posts públicos sem autenticação", async () => {
+        const res = await request(app).get("/posts/public");
+        expect(res.statusCode).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+    });
+
+    it("deve listar todos os posts (professor)", async () => {
+        const res = await request(app)
+            .get("/posts/all")
+            .set("Authorization", "Bearer tokenFake");
+        expect(res.statusCode).toBe(200);
+        expect(Array.isArray(res.body)).toBe(true);
+    });
+
     it("deve retornar erro 401 sem token", async () => {
         const res = await request(app).get("/posts");
         expect(res.statusCode).toBe(401);

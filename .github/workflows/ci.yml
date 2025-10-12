@@ -27,38 +27,38 @@ jobs:
           --health-retries 5
 
     steps:
-      # 1️⃣ Faz checkout do código
+      # Faz checkout do código
       - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      # 2️⃣ Configura o Node
+      # Configura o Node
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      # 3️⃣ Instala as dependências
+      # Instala as dependências
       - name: Instalar dependências
         run: npm install
 
-      # 4️⃣ Gera o cliente Prisma
+      # Gera o cliente Prisma
       - name: Gerar cliente Prisma
         run: npx prisma generate
 
-      # 5️⃣ Executa as migrações do banco
+      # Executa as migrações do banco
       - name: Executar migrações Prisma
         run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/techchallenge
 
-      # 6️⃣ Roda os testes automatizados com cobertura
+      # Roda os testes automatizados com cobertura
       - name: Executar testes
         run: npm test -- --coverage
         env:
           DATABASE_URL: postgres://postgres:postgres@localhost:5432/techchallenge
           NODE_ENV: test
-          JWT_SECRET: secret123
+          JWT_SEßCRET: secret123
 
-      # 7️⃣ Exibe resultado final
+      # Exibe resultado final
       - name: Exibir cobertura de testes
         run: echo "✅ Testes executados com sucesso e cobertura gerada!"

@@ -1,7 +1,13 @@
 import prisma from "../prisma/client";
 
-export const listPosts = async () => {
-    return prisma.post.findMany({ orderBy: { createdAt: "desc" } });
+export const listPublicPosts = async () => {
+    return prisma.post.findMany({
+        where: { isPublic: true },
+    });
+};
+
+export const listAllPosts = async () => {
+    return prisma.post.findMany();
 };
 
 export const getPostById = async (id: number) => {

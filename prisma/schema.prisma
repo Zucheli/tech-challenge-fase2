@@ -18,6 +18,7 @@ model Post {
   title     String
   content   String
   author    String?
+  isPublic    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

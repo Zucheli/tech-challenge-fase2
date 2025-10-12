@@ -13,6 +13,36 @@ const router = Router();
 
 /**
  * @swagger
+ * /posts/public:
+ *   get:
+ *     summary: Lista posts públicos disponíveis aos alunos
+ *     tags: [Posts]
+ *     description: Retorna apenas posts marcados como públicos. Não requer autenticação.
+ *     responses:
+ *       200:
+ *         description: Lista de posts públicos retornada com sucesso
+ */
+router.get("/public", postsController.listPublicPosts);
+
+/**
+ * @swagger
+ * /posts/all:
+ *   get:
+ *     summary: Lista todos os posts criados (visível para professores)
+ *     tags: [Posts]
+ *     description: Retorna todos os posts criados, incluindo privados e públicos. Requer autenticação.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de todos os posts retornada com sucesso
+ *       401:
+ *         description: Token inválido ou ausente
+ */
+router.get("/all", authMiddleware, postsController.listAllPosts);
+
+/**
+ * @swagger
  * /posts:
  *   get:
  *     summary: Lista todos os posts
@@ -23,7 +53,7 @@ const router = Router();
  *       200:
  *         description: Lista de posts retornada com sucesso
  */
-router.get("/", authMiddleware, postsController.listPosts);
+router.get("/", authMiddleware, postsController.listPublicPosts);
 
 /**
  * @swagger
