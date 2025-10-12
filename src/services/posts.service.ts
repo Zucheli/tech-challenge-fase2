@@ -14,9 +14,12 @@ export const createPost = async (data: { title: string; content: string; author?
 
 export const updatePost = async (id: number, data: { title?: string; content?: string; author?: string }) => {
     try {
-        return prisma.post.update({ where: { id }, data });
-    } catch {
-        return null;
+        return await prisma.post.update({ where: { id }, data });
+    } catch (error: any) {
+        if (error.code === "P2025") {
+            return null;
+        }
+        throw error;
     }
 };
 
