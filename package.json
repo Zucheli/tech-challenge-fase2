@@ -9,7 +9,7 @@
         "start": "node dist/index.js",
         "prisma:generate": "prisma generate",
         "prisma:migrate": "prisma migrate dev --name init",
-        "test": "jest --runInBand --detectOpenHandles --forceExit",
+        "test": "jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
         "test:ci": "jest --coverage --runInBand"
     },
     "keywords": [],
