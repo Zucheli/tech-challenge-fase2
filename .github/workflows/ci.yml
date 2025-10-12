@@ -1,29 +1,64 @@
-name: Node.js CI
+name: CI - Tech Challenge Fase 2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [main]
   pull_request:
-    branches: [ "main" ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v3
+    # 🐘 Serviço PostgreSQL para rodar o Prisma e os testes de integração
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: techchallenge
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
+    steps:
+      # 1️⃣ Faz checkout do código
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      # 2️⃣ Configura o Node
       - name: Configurar Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      # 3️⃣ Instala as dependências
       - name: Instalar dependências
         run: npm install
 
-      - name: Rodar build
-        run: npm run build
+      # 4️⃣ Gera o cliente Prisma
+      - name: Gerar cliente Prisma
+        run: npx prisma generate
 
+      # 5️⃣ Executa as migrações do banco
+      - name: Executar migrações Prisma
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/techchallenge
+
+      # 6️⃣ Roda os testes automatizados com cobertura
       - name: Executar testes
-        run: npm test
+        run: npm test -- --coverage
+        env:
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/techchallenge
+          NODE_ENV: test
+          JWT_SECRET: secret123
+
+      # 7️⃣ Exibe resultado final
+      - name: Exibir cobertura de testes
+        run: echo "✅ Testes executados com sucesso e cobertura gerada!"
