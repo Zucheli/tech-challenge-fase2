@@ -65,7 +65,7 @@ tech-challenge-fase2/
 
 ### 1️⃣ Clone o repositório
 ```bash
-git clone https://github.com/seuusuario/tech-challenge-fase2.git
+git clone https://github.com/Zucheli/tech-challenge-fase2.git
 cd tech-challenge-fase2
 ```
 

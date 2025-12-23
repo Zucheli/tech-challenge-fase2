@@ -99,7 +99,7 @@ router.get("/search", authMiddleware, postsController.searchPosts);
  *       404:
  *         description: Post não encontrado
  */
-router.get("/:id", authMiddleware, postsController.getPostById);
+router.get("/:id", postsController.getPostById);
 
 /**
  * @swagger
