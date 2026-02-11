@@ -17,7 +17,12 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     }
 
     try {
-        jwt.verify(token, SECRET);
+        const decoded = jwt.verify(token, SECRET) as {
+            username: string;
+            role: "ALUNO" | "PROFESSOR";
+        };
+
+        req.user = decoded;
         next();
     } catch (err) {
         return res.status(401).json({ error: "Token inválido" });

@@ -6,10 +6,30 @@ const router = Router();
 router.post("/login", (req, res) => {
     const { username, password } = req.body;
 
-    // autenticação fake apenas pra testes
+    // Professor
     if (username === "mateus" && password === "1234") {
-        const token = generateToken({ username });
-        return res.json({ token });
+        const token = generateToken({
+            username,
+            role: "PROFESSOR",
+        });
+
+        return res.json({
+            token,
+            role: "PROFESSOR",
+        });
+    }
+
+    // Aluno
+    if (username === "aluno" && password === "1234") {
+        const token = generateToken({
+            username,
+            role: "ALUNO",
+        });
+
+        return res.json({
+            token,
+            role: "ALUNO",
+        });
     }
 
     res.status(401).json({ error: "Credenciais inválidas" });

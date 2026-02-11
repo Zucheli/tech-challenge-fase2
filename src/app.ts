@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import postsRouter from "./routes/posts.routes";
 import authRouter from "./routes/auth.routes";
+import usersRoutes from "./routes/users.routes";
 import { errorHandler } from "./middlewares/error.middleware";
 import { setupSwagger } from "./config/swagger";
 
@@ -15,6 +16,7 @@ app.use(express.json());
 app.use("/auth", authRouter);
 app.use(errorHandler);
 app.use("/posts", postsRouter);
+app.use("/users", usersRoutes);
 
 // rota de teste
 app.get("/health", (_req, res) => {

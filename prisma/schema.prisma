@@ -23,3 +23,15 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ALUNO
+  PROFESSOR
+}
