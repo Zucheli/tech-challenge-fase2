@@ -26,8 +26,6 @@ router.get(
  */
 router.get(
     "/",
-    authMiddleware,
-    authorizeRole([Role.ALUNO, Role.PROFESSOR]),
     postsController.listPublicPosts
 );
 
@@ -46,8 +44,6 @@ router.get(
  */
 router.get(
     "/:id",
-    authMiddleware,
-    authorizeRole([Role.ALUNO, Role.PROFESSOR]),
     postsController.getPostById
 );
 

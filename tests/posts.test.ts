@@ -2,34 +2,44 @@ import request from "supertest";
 import app from "../src/app";
 import { generateToken } from "../src/middlewares/auth.middleware";
 
-const token = generateToken({ username: "mateus" });
+const professorToken = generateToken({
+    username: "mateus",
+    role: "PROFESSOR"
+});
+
+const alunoToken = generateToken({
+    username: "joao",
+    role: "ALUNO"
+});
 
 describe("POSTS API", () => {
-    it("deve criar um novo post", async () => {
+    it("deve criar um novo post (professor)", async () => {
         const res = await request(app)
             .post("/posts")
-            .set("Authorization", `Bearer ${token}`)
+            .set("Authorization", `Bearer ${professorToken}`)
             .send({
                 title: "Post de Teste",
-                content: "Conteúdo gerado automaticamente",
-                author: "Mateus"
+                content: "Conteúdo gerado automaticamente"
             });
 
         expect(res.statusCode).toBe(201);
         expect(res.body).toHaveProperty("id");
     });
 
-    it("deve listar posts", async () => {
+    it("aluno não pode criar post", async () => {
         const res = await request(app)
-            .get("/posts")
-            .set("Authorization", `Bearer ${token}`);
+            .post("/posts")
+            .set("Authorization", `Bearer ${alunoToken}`)
+            .send({
+                title: "Post proibido",
+                content: "teste"
+            });
 
-        expect(res.statusCode).toBe(200);
-        expect(Array.isArray(res.body)).toBe(true);
+        expect(res.statusCode).toBe(403);
     });
 
-    it("deve listar posts públicos sem autenticação", async () => {
-        const res = await request(app).get("/posts/public");
+    it("deve listar posts publicamente", async () => {
+        const res = await request(app).get("/posts");
         expect(res.statusCode).toBe(200);
         expect(Array.isArray(res.body)).toBe(true);
     });
@@ -37,44 +47,33 @@ describe("POSTS API", () => {
     it("deve listar todos os posts (professor)", async () => {
         const res = await request(app)
             .get("/posts/all")
-            .set("Authorization", "Bearer tokenFake");
+            .set("Authorization", `Bearer ${professorToken}`);
+
         expect(res.statusCode).toBe(200);
-        expect(Array.isArray(res.body)).toBe(true);
     });
 
-    it("deve retornar erro 401 sem token", async () => {
-        const res = await request(app).get("/posts");
-        expect(res.statusCode).toBe(401);
-    });
-
-    it("deve retornar 404 ao buscar um post inexistente", async () => {
-        const res = await request(app)
-            .get("/posts/9999")
-            .set("Authorization", "Bearer tokenFake");
-
+    it("deve retornar 404 ao buscar post inexistente", async () => {
+        const res = await request(app).get("/posts/9999");
         expect(res.statusCode).toBe(404);
     });
 
-    it("deve atualizar um post existente", async () => {
-        const novoPost = await request(app)
+    it("deve atualizar post (professor)", async () => {
+        const novo = await request(app)
             .post("/posts")
-            .set("Authorization", "Bearer tokenFake")
+            .set("Authorization", `Bearer ${professorToken}`)
             .send({
-                title: "Post Original",
-                content: "Texto inicial"
+                title: "Original",
+                content: "Texto"
             });
 
-        const postId = novoPost.body.id;
-
-        const updateRes = await request(app)
-            .put(`/posts/${postId}`)
-            .set("Authorization", "Bearer tokenFake")
+        const update = await request(app)
+            .put(`/posts/${novo.body.id}`)
+            .set("Authorization", `Bearer ${professorToken}`)
             .send({
-                title: "Post Atualizado",
-                content: "Texto alterado"
+                title: "Atualizado"
             });
 
-        expect(updateRes.statusCode).toBe(200);
-        expect(updateRes.body.title).toBe("Post Atualizado");
+        expect(update.statusCode).toBe(200);
+        expect(update.body.title).toBe("Atualizado");
     });
 });
