@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import { generateToken } from "../src/middlewares/auth.middleware";
+import prisma from "../src/prisma/client";
 
 const professorToken = generateToken({
     username: "mateus",
@@ -76,4 +77,8 @@ describe("POSTS API", () => {
         expect(update.statusCode).toBe(200);
         expect(update.body.title).toBe("Atualizado");
     });
+});
+
+afterAll(async () => {
+    await prisma.$disconnect();
 });

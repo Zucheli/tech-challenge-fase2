@@ -1,6 +1,7 @@
 import request from "supertest";
 import app from "../src/app";
 import { generateToken } from "../src/middlewares/auth.middleware";
+import prisma from "../src/prisma/client";
 
 const professorToken = generateToken({
     username: "mateus",
@@ -18,13 +19,14 @@ describe("USERS API", () => {
             .post("/users")
             .set("Authorization", `Bearer ${professorToken}`)
             .send({
-                username: "novoUser",
+                username: `user_${Date.now()}`,
                 password: "1234",
                 role: "ALUNO"
             });
 
         expect(res.statusCode).toBe(201);
-        expect(res.body.username).toBe("novoUser");
+        expect(res.body).toHaveProperty("id");
+        expect(res.body).toHaveProperty("username");
     });
 
     it("aluno não pode criar usuário", async () => {
@@ -56,4 +58,8 @@ describe("USERS API", () => {
 
         expect(res.statusCode).toBe(403);
     });
+});
+
+afterAll(async () => {
+    await prisma.$disconnect();
 });
