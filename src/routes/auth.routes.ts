@@ -9,6 +9,7 @@ router.post("/login", (req, res) => {
     // Professor
     if (username === "mateus" && password === "1234") {
         const token = generateToken({
+            id: 1,
             username,
             role: "PROFESSOR",
         });
@@ -22,6 +23,7 @@ router.post("/login", (req, res) => {
     // Aluno
     if (username === "aluno" && password === "1234") {
         const token = generateToken({
+            id: 2,
             username,
             role: "ALUNO",
         });

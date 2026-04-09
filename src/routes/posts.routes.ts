@@ -7,26 +7,11 @@ import { Role } from "@prisma/client";
 const router = Router();
 
 /**
- * POSTS PÚBLICOS (sem login)
- */
-router.get("/public", postsController.listPublicPosts);
-
-/**
- * LISTAR TODOS OS POSTS (somente PROFESSOR)
- */
-router.get(
-    "/all",
-    authMiddleware,
-    authorizeRole([Role.PROFESSOR]),
-    postsController.listAllPosts
-);
-
-/**
  * LISTAR POSTS (ALUNO e PROFESSOR)
  */
 router.get(
     "/",
-    postsController.listPublicPosts
+    postsController.listAllPosts
 );
 
 /**
@@ -76,5 +61,8 @@ router.delete(
     authorizeRole([Role.PROFESSOR]),
     postsController.deletePost
 );
+
+router.post("/:id/like", authMiddleware, postsController.likePost);
+router.post("/:id/favorite", authMiddleware, postsController.favoritePost);
 
 export default router;

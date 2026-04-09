@@ -14,24 +14,52 @@ datasource db {
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
+  id        Int        @id @default(autoincrement())
   title     String
   content   String
   author    String?
-  isPublic    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isPublic  Boolean    @default(true)
+  type      String?
+  subject   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  likes      Like[]
+  favorites  Favorite[]
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
+  id        Int        @id @default(autoincrement())
+  username  String     @unique
   password  String
   role      Role
-  createdAt DateTime @default(now())
+  createdAt DateTime   @default(now())
+  likes      Like[]
+  favorites  Favorite[]
 }
 
 enum Role {
   ALUNO
   PROFESSOR
+}
+
+model Like {
+  id     Int @id @default(autoincrement())
+  userId Int
+  postId Int
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
+}
+
+model Favorite {
+  id     Int @id @default(autoincrement())
+  userId Int
+  postId Int
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@unique([userId, postId])
 }
