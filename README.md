@@ -121,7 +121,7 @@ Execute:
 npm test
 ```
 
-Os testes cobrem criação, listagem, busca, atualização de posts, controle de acesso por role, e operações de like/favorito (toggle, autenticação obrigatória).
+Os testes cobrem criação, listagem, busca, atualização de posts, controle de acesso por role, operações de like/favorito (toggle) e comentários (criação, listagem, deleção e permissões).
 
 ---
 
@@ -156,6 +156,12 @@ A pipeline CI/CD realiza automaticamente:
 
 ## 📚 Endpoints
 
+### Auth
+
+| Método | Endpoint | Descrição | Acesso |
+|--------|----------|-----------|--------|
+| POST | `/auth/login` | Realiza login e retorna token JWT | Livre |
+
 ### Posts
 
 | Método | Endpoint | Descrição | Acesso |
@@ -168,6 +174,23 @@ A pipeline CI/CD realiza automaticamente:
 | DELETE | `/posts/:id` | Remove um post | Token (PROFESSOR) |
 | POST | `/posts/:id/like` | Toggle like | Token |
 | POST | `/posts/:id/favorite` | Toggle favorito | Token |
+
+### Comentários
+
+| Método | Endpoint | Descrição | Acesso |
+|--------|----------|-----------|--------|
+| GET | `/posts/:postId/comments` | Lista comentários de um post | Livre |
+| POST | `/posts/:postId/comments` | Adiciona um comentário | Token |
+| DELETE | `/posts/:postId/comments/:id` | Remove comentário (somente autor) | Token |
+
+### Usuários
+
+| Método | Endpoint | Descrição | Acesso |
+|--------|----------|-----------|--------|
+| GET | `/users` | Lista usuários | Token (PROFESSOR) |
+| POST | `/users` | Cria um usuário | Token (PROFESSOR) |
+| PUT | `/users/:id` | Atualiza um usuário | Token (PROFESSOR) |
+| DELETE | `/users/:id` | Remove um usuário | Token (PROFESSOR) |
 
 ### Busca com filtros — `GET /posts/search`
 
@@ -194,6 +217,23 @@ GET /posts/search?liked=true&subject=matematica
   "_count": { "likes": 3, "favorites": 1 },
   "likes":     [{ "userId": 2 }, { "userId": 4 }],
   "favorites": [{ "userId": 2 }]
+}
+```
+
+### Formato de resposta dos comentários
+
+```json
+{
+  "id": 1,
+  "content": "Ótimo post!",
+  "postId": 5,
+  "userId": 2,
+  "createdAt": "...",
+  "user": {
+    "id": 2,
+    "username": "joao",
+    "role": "ALUNO"
+  }
 }
 ```
 
