@@ -3,19 +3,25 @@ import app from "../src/app";
 import { generateToken } from "../src/middlewares/auth.middleware";
 import prisma from "../src/prisma/client";
 
-const professorToken = generateToken({
-    id: 1,
-    username: "mateus",
-    role: "PROFESSOR"
-});
-
-const alunoToken = generateToken({
-    id: 2,
-    username: "joao",
-    role: "ALUNO"
-});
+let professorToken: string;
+let alunoToken: string;
 
 describe("POSTS API", () => {
+    beforeAll(async () => {
+        const professor = await prisma.user.upsert({
+            where: { username: "mateus_test" },
+            update: {},
+            create: { username: "mateus_test", password: "1234", role: "PROFESSOR" },
+        });
+        const aluno = await prisma.user.upsert({
+            where: { username: "joao_test" },
+            update: {},
+            create: { username: "joao_test", password: "1234", role: "ALUNO" },
+        });
+
+        professorToken = generateToken({ id: professor.id, username: professor.username, role: professor.role });
+        alunoToken = generateToken({ id: aluno.id, username: aluno.username, role: aluno.role });
+    });
     it("deve criar um novo post (professor)", async () => {
         const res = await request(app)
             .post("/posts")
@@ -49,7 +55,7 @@ describe("POSTS API", () => {
 
     it("deve listar todos os posts (professor)", async () => {
         const res = await request(app)
-            .get("/posts/all")
+            .get("/posts")
             .set("Authorization", `Bearer ${professorToken}`);
 
         expect(res.statusCode).toBe(200);

@@ -3,14 +3,28 @@ import app from "../src/app";
 import { generateToken } from "../src/middlewares/auth.middleware";
 import prisma from "../src/prisma/client";
 
-const professorToken = generateToken({ id: 1, username: "mateus", role: "PROFESSOR" });
-const alunoToken = generateToken({ id: 2, username: "joao", role: "ALUNO" });
+let professorToken: string;
+let alunoToken: string;
 
 describe("COMMENTS API", () => {
     let postId: number;
     let commentId: number;
 
     beforeAll(async () => {
+        const professor = await prisma.user.upsert({
+            where: { username: "mateus_comment_test" },
+            update: {},
+            create: { username: "mateus_comment_test", password: "1234", role: "PROFESSOR" },
+        });
+        const aluno = await prisma.user.upsert({
+            where: { username: "joao_comment_test" },
+            update: {},
+            create: { username: "joao_comment_test", password: "1234", role: "ALUNO" },
+        });
+
+        professorToken = generateToken({ id: professor.id, username: professor.username, role: professor.role });
+        alunoToken = generateToken({ id: aluno.id, username: aluno.username, role: aluno.role });
+
         const res = await request(app)
             .post("/posts")
             .set("Authorization", `Bearer ${professorToken}`)
