@@ -3,9 +3,7 @@ import * as service from "../services/posts.service";
 
 export const listAllPosts = async (req: Request, res: Response) => {
     try {
-        const userId = (req.user as any)?.id;
-
-        const posts = await service.listAllPosts(userId);
+        const posts = await service.listAllPosts();
         res.json(posts);
     } catch (error) {
         res.status(500).json({ error: "Erro ao listar todos os posts" });
@@ -67,12 +65,16 @@ export const deletePost = async (req: Request, res: Response, next: NextFunction
 
 export const searchPosts = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { query, subject, type } = req.query;
+        const { query, subject, type, liked, favorited } = req.query;
+        const userId = req.user?.id;
 
         const results = await service.searchPosts({
             query: query as string,
             subject: subject as string,
             type: type as string,
+            liked: liked === "true",
+            favorited: favorited === "true",
+            userId,
         });
 
         res.json(results);
@@ -81,30 +83,42 @@ export const searchPosts = async (req: Request, res: Response, next: NextFunctio
     }
 };
 
-export const likePost = async (req: Request, res: Response) => {
+export const likePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId = (req.user as any)?.id;
+        const userId = req.user?.id;
         const postId = Number(req.params.id);
-
-        console.log("REQ.USER:", req.user);
 
         if (!userId) {
             return res.status(401).json({ error: "Usuário não autenticado" });
         }
 
-        const result = await service.toggleLike(userId, postId);
+        if (isNaN(postId)) {
+            return res.status(400).json({ error: "ID inválido" });
+        }
 
+        const result = await service.toggleLike(userId, postId);
         res.json(result);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Erro ao dar like" });
+    } catch (err) {
+        next(err);
     }
 };
 
-export const favoritePost = async (req: Request, res: Response,) => {
-    const userId = (req.user as any).id;
-    const postId = Number(req.params.id);
+export const favoritePost = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = req.user?.id;
+        const postId = Number(req.params.id);
 
-    const result = await service.toggleFavorite(userId, postId);
-    res.json(result);
+        if (!userId) {
+            return res.status(401).json({ error: "Usuário não autenticado" });
+        }
+
+        if (isNaN(postId)) {
+            return res.status(400).json({ error: "ID inválido" });
+        }
+
+        const result = await service.toggleFavorite(userId, postId);
+        res.json(result);
+    } catch (err) {
+        next(err);
+    }
 };

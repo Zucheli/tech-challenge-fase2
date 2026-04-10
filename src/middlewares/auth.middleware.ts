@@ -23,8 +23,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
             role: "ALUNO" | "PROFESSOR";
         };
 
-        console.log("DECODED:", decoded);
-
         req.user = decoded;
         next();
     } catch (err) {

@@ -25,6 +25,7 @@ model Post {
   updatedAt DateTime   @updatedAt
   likes      Like[]
   favorites  Favorite[]
+  comments   Comment[]
 }
 
 model User {
@@ -35,6 +36,7 @@ model User {
   createdAt DateTime   @default(now())
   likes      Like[]
   favorites  Favorite[]
+  comments   Comment[]
 }
 
 enum Role {
@@ -62,4 +64,15 @@ model Favorite {
   post Post @relation(fields: [postId], references: [id])
 
   @@unique([userId, postId])
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  userId    Int
+  postId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
 }

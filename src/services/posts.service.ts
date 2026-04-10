@@ -1,9 +1,8 @@
 import prisma from "../prisma/client";
 
-export const listAllPosts = async (userId?: number) => {
+export const listAllPosts = async () => {
     return prisma.post.findMany({
         orderBy: { createdAt: "desc" },
-
         include: {
             _count: {
                 select: {
@@ -11,24 +10,34 @@ export const listAllPosts = async (userId?: number) => {
                     favorites: true,
                 },
             },
-            likes: userId
-                ? {
-                    where: { userId },
-                    select: { id: true },
-                }
-                : false,
-            favorites: userId
-                ? {
-                    where: { userId },
-                    select: { id: true },
-                }
-                : false,
+            likes: {
+                select: { userId: true },
+            },
+            favorites: {
+                select: { userId: true },
+            },
         },
     });
 };
 
 export const getPostById = async (id: number) => {
-    return prisma.post.findUnique({ where: { id } });
+    return prisma.post.findUnique({
+        where: { id },
+        include: {
+            _count: {
+                select: {
+                    likes: true,
+                    favorites: true,
+                },
+            },
+            likes: {
+                select: { userId: true },
+            },
+            favorites: {
+                select: { userId: true },
+            },
+        },
+    });
 };
 
 export const createPost = async (data: { title: string; content: string; author?: string, type?: string, subject?: string }) => {
@@ -59,10 +68,16 @@ export const searchPosts = async ({
     query,
     subject,
     type,
+    liked,
+    favorited,
+    userId,
 }: {
     query?: string;
     subject?: string;
     type?: string;
+    liked?: boolean;
+    favorited?: boolean;
+    userId?: number;
 }) => {
     const filters: any[] = [];
 
@@ -103,9 +118,30 @@ export const searchPosts = async ({
         });
     }
 
+    // ❤️ posts curtidos pelo usuário
+    if (liked && userId) {
+        filters.push({
+            likes: { some: { userId } },
+        });
+    }
+
+    // ⭐ posts favoritados pelo usuário
+    if (favorited && userId) {
+        filters.push({
+            favorites: { some: { userId } },
+        });
+    }
+
     return prisma.post.findMany({
         where: filters.length ? { AND: filters } : {},
         orderBy: { createdAt: "desc" },
+        include: {
+            _count: {
+                select: { likes: true, favorites: true },
+            },
+            likes: { select: { userId: true } },
+            favorites: { select: { userId: true } },
+        },
     });
 };
 

@@ -10,12 +10,13 @@ Projeto desenvolvido por **Mateus Zucheli** como entrega da **Fase 2** do Tech C
 Este projeto consiste em uma **API RESTful** para o **gerenciamento de postagens entre professores e alunos**.
 
 - 👨‍🏫 **Professores:** podem criar, editar e excluir postagens.  
-- 🎓 **Alunos:** podem visualizar e buscar posts públicos.
+- 🎓 **Alunos:** podem visualizar, buscar, curtir e favoritar posts.
 
 A aplicação foi construída com foco em **boas práticas, modularização e automação**, integrando as seguintes funcionalidades:
 
 - CRUD completo com **Prisma + PostgreSQL**  
 - Autenticação via **JWT (JSON Web Token)**  
+- Sistema de **likes e favoritos** com toggle por usuário  
 - Testes automatizados com **Jest + Supertest**  
 - Documentação via **Swagger UI**  
 - Pipeline **CI/CD no GitHub Actions**  
@@ -95,6 +96,24 @@ npx prisma migrate dev
 
 ---
 
+## 🔐 Autenticação
+
+Faça login com `POST /auth/login` para obter o token JWT:
+
+| Usuário | Senha | Role |
+|---------|-------|------|
+| `mateus` | `1234` | PROFESSOR |
+| `aluno` | `1234` | ALUNO |
+
+Inclua o token nas requisições protegidas:
+```
+Authorization: Bearer <token>
+```
+
+O token contém `{ id, username, role }` e é utilizado internamente para identificar o usuário em operações de like e favorito.
+
+---
+
 ## 🧪 Testes Automatizados
 
 Execute:
@@ -102,14 +121,7 @@ Execute:
 npm test
 ```
 
-📊 **Saída esperada:**
-```
-PASS tests/posts.test.ts
-PASS tests/app.test.ts
-Test Suites: 2 passed, 2 total
-Tests:       8 passed, 8 total
-Coverage:    ~74%
-```
+Os testes cobrem criação, listagem, busca, atualização de posts, controle de acesso por role, e operações de like/favorito (toggle, autenticação obrigatória).
 
 ---
 
@@ -142,18 +154,54 @@ A pipeline CI/CD realiza automaticamente:
 
 ---
 
-## 📚 Endpoints Principais
+## 📚 Endpoints
+
+### Posts
 
 | Método | Endpoint | Descrição | Acesso |
-|--------|-----------|-----------|--------|
-| **GET** | `/posts/public` | Lista posts públicos (alunos) | Livre |
-| **GET** | `/posts/all` | Lista todos os posts (professores) | Token |
-| **GET** | `/posts/:id` | Lê um post específico | Token |
-| **GET** | `/posts/search?query=termo` | Busca posts por palavra-chave | Token |
-| **POST** | `/posts` | Cria um novo post | Token |
-| **PUT** | `/posts/:id` | Atualiza uma postagem | Token |
-| **DELETE** | `/posts/:id` | Exclui uma postagem | Token |
-| **GET** | `/health` | Verifica o status da API | Livre |
+|--------|----------|-----------|--------|
+| GET | `/posts` | Lista todos os posts | Livre |
+| GET | `/posts/:id` | Detalhes de um post | Livre |
+| GET | `/posts/search` | Busca com filtros | Token (ALUNO/PROFESSOR) |
+| POST | `/posts` | Cria um post | Token (PROFESSOR) |
+| PUT | `/posts/:id` | Atualiza um post | Token (PROFESSOR) |
+| DELETE | `/posts/:id` | Remove um post | Token (PROFESSOR) |
+| POST | `/posts/:id/like` | Toggle like | Token |
+| POST | `/posts/:id/favorite` | Toggle favorito | Token |
+
+### Busca com filtros — `GET /posts/search`
+
+| Query param | Tipo | Descrição |
+|-------------|------|-----------|
+| `query` | string | Busca parcial em título e conteúdo |
+| `subject` | string | Busca parcial por disciplina |
+| `type` | string | Filtro exato por tipo |
+| `liked` | boolean | Somente posts curtidos pelo usuário logado |
+| `favorited` | boolean | Somente posts favoritados pelo usuário logado |
+
+**Exemplo:**
+```
+GET /posts/search?liked=true&subject=matematica
+```
+
+### Formato de resposta dos posts
+
+```json
+{
+  "id": 5,
+  "title": "Título",
+  "content": "...",
+  "_count": { "likes": 3, "favorites": 1 },
+  "likes":     [{ "userId": 2 }, { "userId": 4 }],
+  "favorites": [{ "userId": 2 }]
+}
+```
+
+### Like e Favorito
+
+- Ambos são **toggle**: uma chamada adiciona, outra remove.
+- Sem body — o usuário é identificado pelo token JWT.
+- Respostas: `{ liked: true | false }` e `{ favorited: true | false }`.
 
 ---
 
@@ -161,8 +209,6 @@ A pipeline CI/CD realiza automaticamente:
 
 Acesse:
 👉 [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-
-Lá é possível testar os endpoints e visualizar os exemplos de requisição/resposta.
 
 ---
 

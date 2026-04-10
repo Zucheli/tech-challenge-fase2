@@ -4,11 +4,13 @@ import { generateToken } from "../src/middlewares/auth.middleware";
 import prisma from "../src/prisma/client";
 
 const professorToken = generateToken({
+    id: 1,
     username: "mateus",
     role: "PROFESSOR"
 });
 
 const alunoToken = generateToken({
+    id: 2,
     username: "joao",
     role: "ALUNO"
 });
@@ -76,6 +78,82 @@ describe("POSTS API", () => {
 
         expect(update.statusCode).toBe(200);
         expect(update.body.title).toBe("Atualizado");
+    });
+
+    it("deve dar like em um post (aluno)", async () => {
+        const novo = await request(app)
+            .post("/posts")
+            .set("Authorization", `Bearer ${professorToken}`)
+            .send({ title: "Post para like", content: "Conteúdo" });
+
+        const res = await request(app)
+            .post(`/posts/${novo.body.id}/like`)
+            .set("Authorization", `Bearer ${alunoToken}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty("liked");
+    });
+
+    it("deve alternar like (toggle) ao dar like duas vezes", async () => {
+        const novo = await request(app)
+            .post("/posts")
+            .set("Authorization", `Bearer ${professorToken}`)
+            .send({ title: "Post toggle like", content: "Conteúdo" });
+
+        await request(app)
+            .post(`/posts/${novo.body.id}/like`)
+            .set("Authorization", `Bearer ${alunoToken}`);
+
+        const res = await request(app)
+            .post(`/posts/${novo.body.id}/like`)
+            .set("Authorization", `Bearer ${alunoToken}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body.liked).toBe(false);
+    });
+
+    it("deve favoritar um post (aluno)", async () => {
+        const novo = await request(app)
+            .post("/posts")
+            .set("Authorization", `Bearer ${professorToken}`)
+            .send({ title: "Post para favoritar", content: "Conteúdo" });
+
+        const res = await request(app)
+            .post(`/posts/${novo.body.id}/favorite`)
+            .set("Authorization", `Bearer ${alunoToken}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toHaveProperty("favorited");
+    });
+
+    it("deve alternar favorito (toggle) ao favoritar duas vezes", async () => {
+        const novo = await request(app)
+            .post("/posts")
+            .set("Authorization", `Bearer ${professorToken}`)
+            .send({ title: "Post toggle favorite", content: "Conteúdo" });
+
+        await request(app)
+            .post(`/posts/${novo.body.id}/favorite`)
+            .set("Authorization", `Bearer ${alunoToken}`);
+
+        const res = await request(app)
+            .post(`/posts/${novo.body.id}/favorite`)
+            .set("Authorization", `Bearer ${alunoToken}`);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body.favorited).toBe(false);
+    });
+
+    it("deve retornar 401 ao tentar dar like sem autenticação", async () => {
+        const novo = await request(app)
+            .post("/posts")
+            .set("Authorization", `Bearer ${professorToken}`)
+            .send({ title: "Post sem auth", content: "Conteúdo" });
+
+        const res = await request(app)
+            .post(`/posts/${novo.body.id}/like`);
+
+        expect(res.statusCode).toBe(401);
     });
 });
 
